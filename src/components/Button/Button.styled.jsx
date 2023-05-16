@@ -1,12 +1,13 @@
 import styled from '@emotion/styled';
 
 export const ButtonComponent = styled.button`
+  margin: 30px auto;
+  display: block;
   padding: 8px 16px;
   border-radius: 2px;
   background-color: #247035;
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
-  display: inline-block;
   color: #fff;
   border: 0;
   text-decoration: none;

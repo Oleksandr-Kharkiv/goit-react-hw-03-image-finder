@@ -22,7 +22,7 @@ export class Searchbar extends Component {
   handleSubmit = e => {
     e.preventDefault();
     if(this.state.inputValue.trim() === '') {
-      return toast('Enter your search query')
+      return toast('Enter or change your search query')
     }
     this.props.onSubmit(this.state.inputValue);
     this.setState({inputValue: ''})
@@ -33,7 +33,7 @@ export class Searchbar extends Component {
       <SearchbarComponent>
         <SearchForm onSubmit={this.handleSubmit}>
           <SearchFormButton type="submit">
-          <FaSearch size='20px' color='orange'/>
+          <FaSearch size='24px' color='orange'/>
             <SearchFormLabel>Search</SearchFormLabel>
           </SearchFormButton>
 
