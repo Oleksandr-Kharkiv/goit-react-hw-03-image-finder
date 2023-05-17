@@ -1,46 +1,96 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { Loader } from '../Loader/Loader';
+import { toast } from 'react-toastify';
 import { ImageGalleryComponent } from './ImageGallery.styled';
 import { ImageGalleryItem } from '../ImageGalleryItem/ImageGalleryItem';
-import { Loader } from '../Loader/Loader';
+import { Button } from '../Button/Button';
+import { fetchPhoto } from '../../API/fetchPhoto';
 
 export class ImageGallery extends Component {
   state = {
     photos: null,
-    loading: false,
+    totalHits: null,
     page: 1,
+    status: 'idle',
   };
+
   componentDidUpdate(prevProps, prevState) {
-    if (
-      prevProps.searchQuery.toLowerCase() !==
-      this.props.searchQuery.toLowerCase()
-    ) {
-      this.setState({ loading: true });
-      fetch(
-        `https://pixabay.com/api/?key=34921015-82cb8e104c87b6309f3f6f395&q=${this.props.searchQuery}&image_type=photo&per_page=12&page=${this.page}`
-      )
-        .then(res => res.json())
-        .then(photos => {
-          this.setState({ photos: photos.hits });
+    const oldQuery = prevProps.searchQuery.toLowerCase();
+    const newQuery = this.props.searchQuery.toLowerCase();
+
+    if (oldQuery !== newQuery) {
+      this.setState({ page: 1, status: 'pending' });
+
+      fetchPhoto(newQuery, this.state.page)
+        .then(res => {
+          this.setState({
+            photos: res.hits,
+            totalHits: res.totalHits,
+            status: 'resolved',
+          });
         })
-        .finally(() => this.setState({ loading: false }));
+        .catch(err => this.setState({ err, status: 'rejected' }));
+    }
+
+    if (prevState.page !== this.state.page) {
+      fetchPhoto(newQuery, this.state.page)
+        .then(res => {
+          this.setState(prevState => ({
+            photos: [...prevState.photos, ...res.hits],
+            status: 'resolved',
+          }));
+        })
+        .catch(err => this.setState({ err, status: 'rejected' }));
     }
   }
 
+  handleLoadMore = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
+  };
+
   render() {
-    const { photos } = this.state;
-    return (
-      <ImageGalleryComponent>
-        {this.state.loading && <Loader/>}
-        {photos &&
-          photos.map(photo => (
-            <ImageGalleryItem
-              key={photo.id}
-              id={photo.id}
-              webformatURL={photo.webformatURL}
-              tags={photo.tags}
-            />
-          ))}
-      </ImageGalleryComponent>
-    );
+    const { photos, status, totalHits } = this.state;
+
+    if (status === 'idle') {
+      return;
+    }
+
+    if (status === 'pending') {
+      return <Loader />;
+    }
+
+    if (status === 'resolved') {
+      return (
+        <>
+          <ImageGalleryComponent>
+            {photos &&
+              photos.map(photo => (
+                <ImageGalleryItem
+                  key={photo.id}
+                  id={photo.id}
+                  webformatURL={photo.webformatURL}
+                  largeImageURL={photo.largeImageURL}
+                  tags={photo.tags}
+                  onClick={this.props.onClick}
+                />
+              ))}
+          </ImageGalleryComponent>
+          {photos.length < totalHits && (
+            <Button onClick={this.handleLoadMore} />
+          )}
+        </>
+      );
+    }
+    if (status === 'rejected') {
+      return toast.error('Something went wrong');
+    }
   }
 }
+
+ImageGallery.propTypes = {
+  searchQuery: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+};

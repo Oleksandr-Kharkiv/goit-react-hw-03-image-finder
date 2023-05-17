@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 
 export const ButtonComponent = styled.button`
-  margin: 30px auto;
+  margin: 30px auto 0;
   display: block;
   padding: 8px 16px;
   border-radius: 2px;
@@ -23,5 +23,8 @@ export const ButtonComponent = styled.button`
   &:hover,
   &:focus {
     background-color: #075f1a;
+  }
+  &:active {
+    color: orange;
   }
 `;
