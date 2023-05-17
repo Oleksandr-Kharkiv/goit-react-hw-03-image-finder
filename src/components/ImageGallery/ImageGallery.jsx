@@ -29,6 +29,11 @@ export class ImageGallery extends Component {
             totalHits: res.totalHits,
             status: 'resolved',
           });
+          if(res.totalHits === 0) {
+            toast.warn(`Not found`);
+          } else {
+            toast.success(`We found ${res.totalHits} images.`)
+          } 
         })
         .catch(err => this.setState({ err, status: 'rejected' }));
     }
