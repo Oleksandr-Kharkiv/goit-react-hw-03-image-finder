@@ -14,15 +14,10 @@ export class App extends Component {
 
   handleFormSubmit = inputValue => {
     this.setState({ searchQuery: inputValue, page: 1 });
-
-    console.log(`APP submit searchQuery: ${this.state.searchQuery}`);
-    console.log(`APP submit page: ${this.state.page}`);
   };
 
   handleLoadMore = () => {
     this.setState(prevState => ({page: prevState.page + 1}));
-    console.log(`APP LoadMore searchQuery: ${this.state.searchQuery}`);
-    console.log(`APP LoadMore page: ${this.state.page}`);
   };
   
   toggleModal = () => {

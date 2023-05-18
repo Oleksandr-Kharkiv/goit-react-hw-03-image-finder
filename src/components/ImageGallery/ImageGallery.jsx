@@ -17,19 +17,17 @@ export class ImageGallery extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (
       prevProps.searchQuery.toLowerCase() !==
-      this.props.searchQuery.toLowerCase()
+        this.props.searchQuery.toLowerCase()
     ) {
-      this.newSearch();
-    }
-
-    if (prevProps.page !== this.props.page) {
+      this.setState({ status: 'pending' });
+       this.newSearch();
+    } else if (prevProps.page !== this.props.page) {
       this.addPhoto();
     }
   }
 
   newSearch = () => {
-    this.setState({ status: 'pending' });
-    fetchPhoto(this.props.searchQuery, this.props.page)
+    fetchPhoto(this.props.searchQuery, 1)
       .then(res => {
         this.setState({
           photos: res.hits,
