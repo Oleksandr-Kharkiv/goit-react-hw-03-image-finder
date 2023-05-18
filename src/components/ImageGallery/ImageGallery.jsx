@@ -11,49 +11,49 @@ export class ImageGallery extends Component {
   state = {
     photos: null,
     totalHits: null,
-    page: 1,
     status: 'idle',
   };
 
   componentDidUpdate(prevProps, prevState) {
-    const oldQuery = prevProps.searchQuery.toLowerCase();
-    const newQuery = this.props.searchQuery.toLowerCase();
-
-    if (oldQuery !== newQuery) {
-      this.setState({ page: 1, status: 'pending' });
-
-      fetchPhoto(newQuery, this.state.page)
-        .then(res => {
-          this.setState({
-            photos: res.hits,
-            totalHits: res.totalHits,
-            status: 'resolved',
-          });
-          if(res.totalHits === 0) {
-            toast.warn(`Not found`);
-          } else {
-            toast.success(`We found ${res.totalHits} images.`)
-          } 
-        })
-        .catch(err => this.setState({ err, status: 'rejected' }));
+    if (
+      prevProps.searchQuery.toLowerCase() !==
+      this.props.searchQuery.toLowerCase()
+    ) {
+      this.newSearch();
     }
 
-    if (prevState.page !== this.state.page) {
-      fetchPhoto(newQuery, this.state.page)
-        .then(res => {
-          this.setState(prevState => ({
-            photos: [...prevState.photos, ...res.hits],
-            status: 'resolved',
-          }));
-        })
-        .catch(err => this.setState({ err, status: 'rejected' }));
+    if (prevProps.page !== this.props.page) {
+      this.addPhoto();
     }
   }
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  newSearch = () => {
+    this.setState({ status: 'pending' });
+    fetchPhoto(this.props.searchQuery, this.props.page)
+      .then(res => {
+        this.setState({
+          photos: res.hits,
+          totalHits: res.totalHits,
+          status: 'resolved',
+        });
+        if (res.totalHits === 0) {
+          toast.warn(`Not found`);
+        } else {
+          toast.success(`We found ${res.totalHits} images.`);
+        }
+      })
+      .catch(err => this.setState({ err, status: 'rejected' }));
+  };
+
+  addPhoto = () => {
+    fetchPhoto(this.props.searchQuery, this.props.page)
+      .then(res => {
+        this.setState(prevState => ({
+          photos: [...prevState.photos, ...res.hits],
+          status: 'resolved',
+        }));
+      })
+      .catch(err => this.setState({ err, status: 'rejected' }));
   };
 
   render() {
@@ -84,7 +84,7 @@ export class ImageGallery extends Component {
               ))}
           </ImageGalleryComponent>
           {photos.length < totalHits && (
-            <Button onClick={this.handleLoadMore} />
+            <Button onClick={this.props.handleLoadMore} />
           )}
         </>
       );
@@ -98,4 +98,6 @@ export class ImageGallery extends Component {
 ImageGallery.propTypes = {
   searchQuery: PropTypes.string.isRequired,
   onClick: PropTypes.func.isRequired,
+  handleLoadMore: PropTypes.func.isRequired,
+  page: PropTypes.number.isRequired,
 };
